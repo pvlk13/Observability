@@ -1,0 +1,51 @@
+# custom_kube_prometheus_stack.yml
+
+# 1. ALERTMANAGER 
+alertmanager:
+  alertmanagerSpec:
+    # Matches labels for AlertmanagerConfig CRDs
+    alertmanagerConfigSelector:
+      matchLabels:
+        release: monitoring
+
+    # High Availability: 2 replicas (Fits your 2 nodes)
+    replicas: 2
+
+    # Matcher Strategy: None (Allows flexible alerting)
+    alertmanagerConfigMatcherStrategy:
+      type: None
+    
+    # ADDED FOR T3.SMALL: RAM Limits
+    resources:
+      limits:
+        memory: 200Mi
+      requests:
+        memory: 100Mi
+
+# 2. PROMETHEUS (Crucial for Private Nodes + T3.Small)
+prometheus:
+  prometheusSpec:
+    # Ensures Prometheus doesn't crash your 2GB node
+    resources:
+      requests:
+        memory: 512Mi
+      limits:
+        memory: 1024Mi
+
+    # Storage: Mandatory for the EBS CSI driver you just set up
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp2
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+# 3. GRAFANA (Default tutorial login)
+grafana:
+  adminPassword: prom-operator
+  persistence:
+    enabled: true
+    storageClassName: gp2
+    size: 5Gi
