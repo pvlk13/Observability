@@ -4,5 +4,5 @@ namespace: monitoring
 resources:
   - alerts.yml
   - email-secrets.yml
-  - alertmangerconfig.yml
+  - alertmanagerconfig.yml
   - serviceMonitor.yml

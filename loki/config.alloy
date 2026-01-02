@@ -1,0 +1,22 @@
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+discovery.kubernetes "all_pods" {
+  role = "pod"
+}
+
+loki.source.kubernetes "pod_logs" {
+  targets    = discovery.kubernetes.all_pods.targets
+  forward_to = [loki.write.tunnel.receiver]
+}
+
+loki.write "tunnel" {
+  endpoint {
+    url = "http://loki-gateway.logging.svc.cluster.local/loki/api/v1/push"
+    headers = {
+      "X-Scope-OrgID" = "1",
+    }
+  }
+}
