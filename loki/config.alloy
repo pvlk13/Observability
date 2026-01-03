@@ -20,3 +20,33 @@ loki.write "tunnel" {
     }
   }
 }
+
+// --- TRACING SECTION ---
+
+otelcol.receiver.otlp "otlp_receiver" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    traces = [otelcol.processor.batch.default.input]
+  }
+}
+
+otelcol.processor.batch "default" {
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "tempo.logging.svc.cluster.local:4317"
+    tls {
+      insecure = true
+    } // Closes tls
+  }   // Closes client
+}     // Closes otelcol.exporter.otlp
